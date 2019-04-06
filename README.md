@@ -1,7 +1,25 @@
 NXP Data Co-Processor (DCP) - Linux driver
 ==========================================
 
-**WARNING**: This is a work in progress and this README file is incomplete.
+The NXP Data Co-Processor (DCP) is a built-in hardware module that implements a
+dedicated AES cryptographic engine for encryption/decryption operations.
+
+A device specific random 256-bit OTPMK key is fused in each SoC at
+manufacturing time, this key is unreadable and can only be used by the DCP for
+AES encryption/decryption of user data, through the Secure Non-Volatile Storage
+(SNVS) companion block.
+
+This directory contains a Linux kernel driver for the DCP, with the specific
+functionality of encrypting/decrypting a data blob (typically an encryption
+key) with the OTPMK made available by the SNVS.
+
+The module allows DCP supported symmetric ciphers and hash functions to be used
+through the Linux Crypto API, available algorithms are listed in
+`/proc/crypto`.
+
+The driver is a customized version of the mainline Linux kernel
+[mxs-dcp](https://github.com/torvalds/linux/blob/master/drivers/crypto/mxs-dcp.c)
+driver, patched to allow user of the OTPMK released by the SNVS.
 
 Authors
 =======
@@ -45,6 +63,32 @@ Operation
 (HAB) is enabled, otherwise a Non-volatile Test Key (NVTK), identical for each
 SoC, is used. The secure operation of the DCP and SNVS, in production
 deployments, should always be paired with Secure Boot activation.
+
+The `mxs_dcp` module, when not in Trusted or Secure State, issues the
+following warning at load time:
+
+```
+mxs_dcp: WARNING - not in Trusted or Secure State, Non-volatile Test Key in effect
+```
+
+When in Trusted or Secure State the module issues a corresponding log message
+at load time:
+
+```
+mxs_dcp: Trusted State detected
+```
+
+The driver exposes hardware accelerated symmetric ciphers AES-128-ECB
+(`ecb-aes-dcp`) and AES-128-CBC (`cbc-aes-dcp`). When a key of length 0 is set
+through `ALG_SET_KEY` then the OTPMK derived hardware key (`UNIQUE KEY`) is
+selected, otherwise the passed key is used.
+
+Additionally the driver also exposes hardware accelerated hash functions SHA1
+(`sha1-dcp`) and SHA256 (`sha256-dcp`).
+
+The [INTERLOCK](https://github.com/inversepath/interlock) file encryption
+front-end supports the CAAM through this driver, providing a Go userspace
+implementation reference.
 
 A standalone Go tool, for encryption and decryption, is also available in the
 [dcp_tool.go](https://github.com/inversepath/mxs-dcp/blob/master/dcp_tool.go)
