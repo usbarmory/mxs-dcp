@@ -192,6 +192,7 @@ func DCPDeriveKey(diversifier []byte, iv []byte) (key []byte, err error) {
 	if err != nil {
 		return
 	}
+	defer unix.Close(fd)
 
 	addr := &unix.SockaddrALG{
 		Type: "skcipher",
