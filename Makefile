@@ -1,7 +1,7 @@
 ifneq ($(KERNELRELEASE),)
 
 # kbuild
-#ccflags-y := -march=armv7-a
+ccflags-y := -march=armv7-a
 ccflags-y += -I$(srctree)/drivers/crypto
 obj-m += mxs-dcp.o
 
