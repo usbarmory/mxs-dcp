@@ -179,6 +179,12 @@ static struct dcp *global_sdcp;
 #define MXS_DCP_CONTROL1_KEY_SELECT_UNIQUE_KEY	(0xfe << 8)
 #define MXS_DCP_CONTROL1_KEY_SELECT_OTP_KEY	(0xff << 8)
 
+/* SNVS registers */
+#define SNVS_HPSR_REG				0x020cc014
+#define SNVS_HPSR_SSM_STATE_MASK		0xf00
+#define SNVS_HPSR_SSM_STATE_TRUSTED		0xd00
+#define SNVS_HPSR_SSM_STATE_SECURE		0xf00
+
 static int mxs_dcp_start_dma(struct dcp_async_ctx *actx)
 {
 	struct dcp *sdcp = global_sdcp;
@@ -1034,6 +1040,9 @@ static int mxs_dcp_probe(struct platform_device *pdev)
 	struct resource *iores;
 	int dcp_vmi_irq, dcp_irq;
 
+	void __iomem *page;
+	u32 ssm_state, offset;
+
 	if (global_sdcp) {
 		dev_err(dev, "Only one DCP instance allowed!\n");
 		return -ENODEV;
@@ -1060,7 +1069,6 @@ static int mxs_dcp_probe(struct platform_device *pdev)
 	sdcp->base = devm_ioremap_resource(dev, iores);
 	if (IS_ERR(sdcp->base))
 		return PTR_ERR(sdcp->base);
-
 
 	ret = devm_request_irq(dev, dcp_vmi_irq, mxs_dcp_irq, 0,
 			       "dcp-vmi-irq", sdcp);
@@ -1180,6 +1188,20 @@ static int mxs_dcp_probe(struct platform_device *pdev)
 				dcp_sha256_alg.halg.base.cra_name);
 			goto err_unregister_sha1;
 		}
+	}
+
+	dev_info(&pdev->dev, "mxs_dcp: initialized\n");
+
+	page = ioremap(SNVS_HPSR_REG & ~(SZ_4K - 1), SZ_4K);
+	offset = SNVS_HPSR_REG & (SZ_4K - 1);
+	ssm_state = (__raw_readl(page + offset) & SNVS_HPSR_SSM_STATE_MASK);
+
+	if (ssm_state == SNVS_HPSR_SSM_STATE_TRUSTED) {
+		printk(KERN_INFO "mxs_dcp: Trusted State detected\n");
+	} else if (ssm_state == SNVS_HPSR_SSM_STATE_SECURE) {
+		printk(KERN_INFO "mxs_dcp: Secure State detected\n");
+	} else {
+		printk(KERN_NOTICE "mxs_dcp: WARNING - not in Trusted or Secure State, Non-volatile Test Key in effect\n");
 	}
 
 	return 0;
