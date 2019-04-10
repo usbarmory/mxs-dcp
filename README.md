@@ -1,8 +1,9 @@
 NXP Data Co-Processor (DCP) - Linux driver
 ==========================================
 
-The NXP Data Co-Processor (DCP) is a built-in hardware module that implements a
-dedicated AES cryptographic engine for encryption/decryption operations.
+The NXP Data Co-Processor (DCP) is a built-in hardware module for specific NXP
+SoCs¹ that implements a dedicated AES cryptographic engine for
+encryption/decryption operations.
 
 A device specific random 256-bit OTPMK key is fused in each SoC at
 manufacturing time, this key is unreadable and can only be used by the DCP for
@@ -20,6 +21,8 @@ through the Linux Crypto API, available algorithms are listed in
 The driver is a customized version of the mainline Linux kernel
 [mxs-dcp](https://github.com/torvalds/linux/blob/master/drivers/crypto/mxs-dcp.c)
 driver, patched to allow user of the OTPMK released by the SNVS.
+
+¹i.MX23, i.MX28, i.MX6SL, i.MX6SLL, i.MX6ULL, i.MX6ULZ
 
 Authors
 =======
