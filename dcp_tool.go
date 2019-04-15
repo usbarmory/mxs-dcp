@@ -229,7 +229,7 @@ func DCPDeriveKey(diversifier []byte, iv []byte) (key []byte, err error) {
 
 	apifd, _, _ := unix.Syscall(unix.SYS_ACCEPT, uintptr(fd), 0, 0)
 
-	return cryptoAPI(apifd, unix.ALG_OP_ENCRYPT, iv, pad(diversifier))
+	return cryptoAPI(apifd, unix.ALG_OP_ENCRYPT, iv, pad(diversifier, false))
 }
 
 // adapted from github.com/inversepath/interlock/internal/aes
@@ -342,12 +342,14 @@ func decryptOFB(key []byte, iv []byte, input *os.File, output *os.File) (err err
 	return
 }
 
-func pad(buf []byte) []byte {
-	padLen := aes.BlockSize
+func pad(buf []byte, extraBlock bool) []byte {
+	padLen :=  0
 	r := len(buf) % aes.BlockSize
 
 	if r != 0 {
-		padLen -= r
+		padLen = aes.BlockSize - r
+	} else if extraBlock {
+		padLen = aes.BlockSize
 	}
 
 	padding := []byte{(byte)(padLen)}
