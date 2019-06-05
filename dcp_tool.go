@@ -146,14 +146,16 @@ func main() {
 }
 
 func encrypt(input *os.File, output *os.File, diversifier []byte) (err error) {
+	// It is advised to use only deterministic input data for key
+	// derivation, therefore we use the empty allocated IV before it being
+	// filled.
 	iv := make([]byte, aes.BlockSize)
-	_, err = io.ReadFull(rand.Reader, iv)
+	key, err := DCPDeriveKey(diversifier, iv)
 
 	if err != nil {
 		return
 	}
-
-	key, err := DCPDeriveKey(diversifier, iv)
+	_, err = io.ReadFull(rand.Reader, iv)
 
 	if err != nil {
 		return
@@ -165,14 +167,17 @@ func encrypt(input *os.File, output *os.File, diversifier []byte) (err error) {
 }
 
 func decrypt(input *os.File, output *os.File, diversifier []byte) (err error) {
+	// It is advised to use only deterministic input data for key
+	// derivation, therefore we use the empty allocated IV before it being
+	// filled.
 	iv := make([]byte, aes.BlockSize)
-	_, err = io.ReadFull(input, iv)
+	key, err := DCPDeriveKey(diversifier, iv)
 
 	if err != nil {
 		return
 	}
 
-	key, err := DCPDeriveKey(diversifier, iv)
+	_, err = io.ReadFull(input, iv)
 
 	if err != nil {
 		return
@@ -343,7 +348,7 @@ func decryptOFB(key []byte, iv []byte, input *os.File, output *os.File) (err err
 }
 
 func pad(buf []byte, extraBlock bool) []byte {
-	padLen :=  0
+	padLen := 0
 	r := len(buf) % aes.BlockSize
 
 	if r != 0 {
