@@ -20,7 +20,7 @@ through the Linux Crypto API, available algorithms are listed in
 
 The driver is a customized version of the mainline Linux kernel
 [mxs-dcp](https://github.com/torvalds/linux/blob/master/drivers/crypto/mxs-dcp.c)
-driver, patched to allow user of the OTPMK released by the SNVS.
+driver, patched to allow use of the OTPMK released by the SNVS.
 
 ¹i.MX23, i.MX28, i.MX6SL, i.MX6SLL, i.MX6ULL, i.MX6ULZ
 
