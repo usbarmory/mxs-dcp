@@ -90,7 +90,7 @@ Additionally the driver also exposes hardware accelerated hash functions SHA1
 (`sha1-dcp`) and SHA256 (`sha256-dcp`).
 
 The [INTERLOCK](https://github.com/inversepath/interlock) file encryption
-front-end supports the CAAM through this driver, providing a Go userspace
+front-end supports the DCP through this driver, providing a Go userspace
 implementation reference.
 
 A standalone Go tool, for encryption and decryption, is also available in the
