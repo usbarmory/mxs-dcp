@@ -114,7 +114,7 @@ func main() {
 	}
 
 	if len(diversifier) > 1 {
-		log.Fatalf("dcp_tool: error, diversifier must be a single hex value (e.g. ab)")
+		log.Fatalf("dcp_tool: error, diversifier must be a single byte value in hex format (e.g. ab)")
 	}
 
 	input, err := os.OpenFile(inputPath, os.O_RDONLY|os.O_EXCL, 0600)
