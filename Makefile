@@ -22,5 +22,5 @@ clean:
 	make -C ${KERNEL_SRC} M=$(CURDIR) clean
 
 dcp_tool:
-	GOARCH=arm ${GO} build -ldflags "-s -w" -o dcp_tool dcp_tool.go
+	GOARCH=arm GO111MODULE=auto ${GO} build -ldflags "-s -w" -o dcp_tool dcp_tool.go
 endif
