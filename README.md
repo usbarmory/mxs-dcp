@@ -22,6 +22,8 @@ The driver is a customized version of the mainline Linux kernel
 [mxs-dcp](https://github.com/torvalds/linux/blob/master/drivers/crypto/mxs-dcp.c)
 driver, patched to allow use of the OTPMK released by the SNVS.
 
+Ensure the `CONFIG_CRYPTO_DEV_MXS_DCP` option is not built-in in your kernel.
+
 ¹i.MX23, i.MX28, i.MX6SL, i.MX6SLL, i.MX6ULL, i.MX6ULZ
 
 Authors
