@@ -44,7 +44,7 @@ when cross compiling adjust `ARCH` and `CROSS_COMPILE` variables accordingly.
 ```
 # the Makefile attempts to locate your Linux kernel source tree, if this fails
 # it can be passed with a Makefile variable (e.g. `make KERNEL_SRC=path`)
-git clone https://github.com/f-secure-foundry/mxs-dcp
+git clone https://github.com/usbarmory/mxs-dcp
 cd mxs-dcp
 make
 make modules_install
@@ -91,19 +91,19 @@ selected, otherwise the passed key is used.
 Additionally the driver also exposes hardware accelerated hash functions SHA1
 (`sha1-dcp`) and SHA256 (`sha256-dcp`).
 
-The [INTERLOCK](https://github.com/f-secure-foundry/interlock) file encryption
+The [INTERLOCK](https://github.com/usbarmory/interlock) file encryption
 front-end supports the DCP through this driver, providing a Go userspace
 implementation reference.
 
 A standalone Go tool, for encryption and decryption, is also available in the
-[dcp_tool.go](https://github.com/f-secure-foundry/mxs-dcp/blob/master/dcp_tool.go)
+[dcp_tool.go](https://github.com/usbarmory/mxs-dcp/blob/master/dcp_tool.go)
 file.
 
 License
 =======
 
 NXP Data Co-Processor (DCP) - Linux driver
-https://github.com/f-secure-foundry/mxs-dcp
+https://github.com/usbarmory/mxs-dcp
 
 Copyright (c) F-Secure Corporation  
 Copyright (c) 2013 Marek Vasut <marex@denx.de>  

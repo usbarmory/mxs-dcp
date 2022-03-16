@@ -1,5 +1,5 @@
 // NXP Data Co-Processor (DCP)
-// https://github.com/f-secure-foundry/mxs-dcp
+// https://github.com/usbarmory/mxs-dcp
 //
 // userspace driver reference example
 //
@@ -237,7 +237,7 @@ func DCPDeriveKey(diversifier []byte, iv []byte) (key []byte, err error) {
 	return cryptoAPI(apifd, unix.ALG_OP_ENCRYPT, iv, pad(diversifier, false))
 }
 
-// adapted from github.com/f-secure-foundry/interlock/internal/aes
+// adapted from github.com/usbarmory/interlock/internal/aes
 func encryptOFB(key []byte, iv []byte, input *os.File, output *os.File) (err error) {
 	block, err := aes.NewCipher(key)
 
@@ -287,7 +287,7 @@ func encryptOFB(key []byte, iv []byte, input *os.File, output *os.File) (err err
 	return
 }
 
-// adapted from github.com/f-secure-foundry/interlock/internal/aes
+// adapted from github.com/usbarmory/interlock/internal/aes
 func decryptOFB(key []byte, iv []byte, input *os.File, output *os.File) (err error) {
 	block, err := aes.NewCipher(key)
 
