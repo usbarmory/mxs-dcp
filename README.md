@@ -33,7 +33,7 @@ Marek Vasut (original driver)
 marex@denx.de  
 
 Andrea Barisani (OTP key support and userspace tool)  
-andrea.barisani@f-secure.com | andrea@inversepath.com  
+andrea.barisani@withsecure.com | andrea@inversepath.com  
 
 Compiling
 =========
@@ -105,7 +105,7 @@ License
 NXP Data Co-Processor (DCP) - Linux driver
 https://github.com/usbarmory/mxs-dcp
 
-Copyright (c) F-Secure Corporation  
+Copyright (c) WithSecure Corporation  
 Copyright (c) 2013 Marek Vasut <marex@denx.de>  
 
 This program is free software: you can redistribute it and/or modify it under
