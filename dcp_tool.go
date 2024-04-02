@@ -215,20 +215,7 @@ func DCPDeriveKey(diversifier []byte, iv []byte) (key []byte, err error) {
 		return
 	}
 
-	if test {
-		err = syscall.SetsockoptString(fd, unix.SOL_ALG, unix.ALG_SET_KEY, TEST_KEY)
-	} else {
-		// https://github.com/golang/go/issues/31277
-		// SetsockoptString does not allow empty strings
-		_, _, e1 := syscall.Syscall6(syscall.SYS_SETSOCKOPT, uintptr(fd), uintptr(unix.SOL_ALG), uintptr(unix.ALG_SET_KEY), uintptr(0), uintptr(0), 0)
-
-		if e1 != 0 {
-			err = errors.New("setsockopt failed")
-			return
-		}
-	}
-
-	if err != nil {
+	if err = syscall.SetsockoptString(fd, unix.SOL_ALG, unix.ALG_SET_KEY, TEST_KEY); err != nil {
 		return
 	}
 
