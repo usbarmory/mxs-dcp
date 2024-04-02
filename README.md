@@ -22,7 +22,7 @@ The driver is a customized version of the mainline Linux kernel
 [mxs-dcp](https://github.com/torvalds/linux/blob/master/drivers/crypto/mxs-dcp.c)
 driver, patched to allow use of the OTPMK released by the SNVS.
 
-Ensure the `CONFIG_CRYPTO_DEV_MXS_DCP` option is not built-in in your kernel.
+Ensure the `CONFIG_CRYPTO_DEV_MXS_DCP` option is *disabled* in your kernel.
 
 ¹i.MX23, i.MX28, i.MX6SL, i.MX6SLL, i.MX6ULL, i.MX6ULZ
 
@@ -95,9 +95,11 @@ The [INTERLOCK](https://github.com/usbarmory/interlock) file encryption
 front-end supports the DCP through this driver, providing a Go userspace
 implementation reference.
 
-A standalone Go tool, for encryption and decryption, is also available in the
-[dcp_tool.go](https://github.com/usbarmory/mxs-dcp/blob/master/dcp_tool.go)
-file.
+The included
+[dcp_tool](https://github.com/usbarmory/mxs-dcp/blob/master/dcp_tool.go)
+utility provides a reference implementation for data blob
+encryption/decryption, it can be built like any Go executable or with
+`make dcp_tool`.
 
 License
 =======
