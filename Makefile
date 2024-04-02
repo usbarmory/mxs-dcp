@@ -22,5 +22,9 @@ clean:
 	make -C ${KERNEL_SRC} M=$(CURDIR) clean
 
 dcp_tool:
+	@if [ ! -f "$(CURDIR)/go.mod" ]; then \
+		$(GO) mod init github.com/usbarmory/mxs-dcp && \
+		$(GO) mod tidy; \
+	fi
 	${GO} build -ldflags "-s -w" -o dcp_tool dcp_tool.go
 endif
