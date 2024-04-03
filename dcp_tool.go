@@ -21,7 +21,8 @@
 // each SoC, is used. The secure operation of the DCP and SNVS, in production
 // deployments, should always be paired with Secure Boot activation.
 //
-//+build linux
+//go:build linux
+// +build linux
 
 package main
 
@@ -88,9 +89,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	op := flag.Arg(0)
+	cmd := flag.Arg(0)
 
-	switch op {
+	switch cmd {
 	case "enc":
 		inputPath = flag.Arg(1)
 		outputPath = flag.Arg(2)
@@ -98,12 +99,14 @@ func main() {
 		outputPath = flag.Arg(1)
 		inputPath = flag.Arg(2)
 	default:
-		log.Fatal("dcp_tool: error, invalid operation")
+		log.Fatal("dcp_tool: error, invalid argument")
 	}
 
 	defer func() {
 		if err != nil {
 			log.Fatalf("dcp_tool: error, %v", err)
+		} else {
+			log.Println("dcp_tool: done")
 		}
 	}()
 
@@ -131,61 +134,38 @@ func main() {
 	}
 	defer output.Close()
 
-	log.Printf("dcp_tool: %s %s to %s", op, inputPath, outputPath)
+	log.Printf("dcp_tool: %s %s to %s", cmd, inputPath, outputPath)
 
-	switch op {
+	err = op(input, output, diversifier, cmd)
+}
+
+func op(input *os.File, output *os.File, diversifier []byte, cmd string) (err error) {
+	// It is advised to use only deterministic input data for key
+	// derivation, therefore we use the empty allocated IV before it being
+	// filled.
+	iv := make([]byte, aes.BlockSize)
+	key, err := DCPDeriveKey(diversifier, iv)
+
+	if err != nil {
+		return
+	}
+
+	switch cmd {
 	case "enc":
-		err = encrypt(input, output, diversifier)
+		if _, err = io.ReadFull(rand.Reader, iv); err != nil {
+			return
+		}
+
+		return encryptOFB(key, iv, input, output)
 	case "dec":
-		err = decrypt(input, output, diversifier)
+		if _, err = io.ReadFull(input, iv); err != nil {
+			return
+		}
+
+		return decryptOFB(key, iv, input, output)
 	}
 
-	if err == nil {
-		log.Println("dcp_tool: done")
-	}
-}
-
-func encrypt(input *os.File, output *os.File, diversifier []byte) (err error) {
-	// It is advised to use only deterministic input data for key
-	// derivation, therefore we use the empty allocated IV before it being
-	// filled.
-	iv := make([]byte, aes.BlockSize)
-	key, err := DCPDeriveKey(diversifier, iv)
-
-	if err != nil {
-		return
-	}
-	_, err = io.ReadFull(rand.Reader, iv)
-
-	if err != nil {
-		return
-	}
-
-	err = encryptOFB(key, iv, input, output)
-
-	return
-}
-
-func decrypt(input *os.File, output *os.File, diversifier []byte) (err error) {
-	// It is advised to use only deterministic input data for key
-	// derivation, therefore we use the empty allocated IV before it being
-	// filled.
-	iv := make([]byte, aes.BlockSize)
-	key, err := DCPDeriveKey(diversifier, iv)
-
-	if err != nil {
-		return
-	}
-
-	_, err = io.ReadFull(input, iv)
-
-	if err != nil {
-		return
-	}
-
-	err = decryptOFB(key, iv, input, output)
-
-	return
+	return errors.New("invalid argument")
 }
 
 // equivalent to PKCS#11 C_DeriveKey with CKM_AES_CBC_ENCRYPT_DATA
@@ -205,13 +185,10 @@ func DCPDeriveKey(diversifier []byte, iv []byte) (key []byte, err error) {
 	}
 
 	if test {
-		addr.Type = "skcipher"
 		addr.Name = "cbc(aes)"
 	}
 
-	err = unix.Bind(fd, addr)
-
-	if err != nil {
+	if err = unix.Bind(fd, addr); err != nil {
 		return
 	}
 
@@ -224,7 +201,6 @@ func DCPDeriveKey(diversifier []byte, iv []byte) (key []byte, err error) {
 	return cryptoAPI(apifd, unix.ALG_OP_ENCRYPT, iv, pad(diversifier, false))
 }
 
-// adapted from github.com/usbarmory/interlock/internal/aes
 func encryptOFB(key []byte, iv []byte, input *os.File, output *os.File) (err error) {
 	block, err := aes.NewCipher(key)
 
@@ -232,9 +208,7 @@ func encryptOFB(key []byte, iv []byte, input *os.File, output *os.File) (err err
 		return
 	}
 
-	_, err = output.Write(iv)
-
-	if err != nil {
+	if _, err = output.Write(iv); err != nil {
 		return
 	}
 
@@ -274,7 +248,6 @@ func encryptOFB(key []byte, iv []byte, input *os.File, output *os.File) (err err
 	return
 }
 
-// adapted from github.com/usbarmory/interlock/internal/aes
 func decryptOFB(key []byte, iv []byte, input *os.File, output *os.File) (err error) {
 	block, err := aes.NewCipher(key)
 
@@ -301,16 +274,14 @@ func decryptOFB(key []byte, iv []byte, input *os.File, output *os.File) (err err
 	limit := stat.Size() - headerSize - macSize
 
 	ciphertextReader := io.LimitReader(input, limit)
-	_, err = io.Copy(mac, ciphertextReader)
 
-	if err != nil {
+	if _, err = io.Copy(mac, ciphertextReader); err != nil {
 		return
 	}
 
 	inputMac := make([]byte, mac.Size())
-	_, err = input.ReadAt(inputMac, stat.Size()-macSize)
 
-	if err != nil {
+	if _, err = input.ReadAt(inputMac, stat.Size()-macSize); err != nil {
 		return
 	}
 
@@ -321,9 +292,7 @@ func decryptOFB(key []byte, iv []byte, input *os.File, output *os.File) (err err
 	stream := cipher.NewOFB(block, iv)
 	writer := &cipher.StreamWriter{S: stream, W: output}
 
-	_, err = input.Seek(headerSize, 0)
-
-	if err != nil {
+	if _, err = input.Seek(headerSize, 0); err != nil {
 		return
 	}
 
