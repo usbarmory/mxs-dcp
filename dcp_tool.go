@@ -170,6 +170,8 @@ func op(input *os.File, output *os.File, diversifier []byte, cmd string) (err er
 
 // equivalent to PKCS#11 C_DeriveKey with CKM_AES_CBC_ENCRYPT_DATA
 func DCPDeriveKey(diversifier []byte, iv []byte) (key []byte, err error) {
+	var aes_key string
+
 	log.Printf("dcp_tool: deriving key, diversifier %x", diversifier)
 
 	fd, err := unix.Socket(unix.AF_ALG, unix.SOCK_SEQPACKET, 0)
@@ -186,13 +188,16 @@ func DCPDeriveKey(diversifier []byte, iv []byte) (key []byte, err error) {
 
 	if test {
 		addr.Name = "cbc(aes)"
+		aes_key = TEST_KEY
+	} else {
+		aes_key = "" // Empty key: Use DCP internal key
 	}
 
 	if err = unix.Bind(fd, addr); err != nil {
 		return
 	}
 
-	if err = syscall.SetsockoptString(fd, unix.SOL_ALG, unix.ALG_SET_KEY, TEST_KEY); err != nil {
+	if err = syscall.SetsockoptString(fd, unix.SOL_ALG, unix.ALG_SET_KEY, aes_key); err != nil {
 		return
 	}
 
