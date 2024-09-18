@@ -45,7 +45,7 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-// Symmetric file encryption using AES-128-OFB, key is derived from a known
+// Symmetric file encryption using AES-128-CTR, key is derived from a known
 // diversifier encrypted with AES-128-CBC through the NXP Data Co-Processor
 // (DCP) with its device specific secret key. This uniquely ties the derived
 // key to the specific hardware unit being used.
@@ -99,14 +99,14 @@ func main() {
 		outputPath = flag.Arg(1)
 		inputPath = flag.Arg(2)
 	default:
-		log.Fatal("dcp_tool: error, invalid argument")
+		log.Fatal("dcp_aes_kdf: error, invalid argument")
 	}
 
 	defer func() {
 		if err != nil {
-			log.Fatalf("dcp_tool: error, %v", err)
+			log.Fatalf("dcp_aes_kdf: error, %v", err)
 		} else {
-			log.Println("dcp_tool: done")
+			log.Println("dcp_aes_kdf: done")
 		}
 	}()
 
@@ -117,7 +117,7 @@ func main() {
 	}
 
 	if len(diversifier) > 1 {
-		log.Fatalf("dcp_tool: error, diversifier must be a single byte value in hex format (e.g. ab)")
+		log.Fatalf("dcp_aes_kdf: error, diversifier must be a single byte value in hex format (e.g. ab)")
 	}
 
 	input, err := os.OpenFile(inputPath, os.O_RDONLY|os.O_EXCL, 0600)
@@ -134,7 +134,7 @@ func main() {
 	}
 	defer output.Close()
 
-	log.Printf("dcp_tool: %s %s to %s", cmd, inputPath, outputPath)
+	log.Printf("dcp_aes_kdf: %s %s to %s", cmd, inputPath, outputPath)
 
 	err = op(input, output, diversifier, cmd)
 }
@@ -156,13 +156,13 @@ func op(input *os.File, output *os.File, diversifier []byte, cmd string) (err er
 			return
 		}
 
-		return encryptOFB(key, iv, input, output)
+		return encryptCTR(key, iv, input, output)
 	case "dec":
 		if _, err = io.ReadFull(input, iv); err != nil {
 			return
 		}
 
-		return decryptOFB(key, iv, input, output)
+		return decryptCTR(key, iv, input, output)
 	}
 
 	return errors.New("invalid argument")
@@ -172,7 +172,7 @@ func op(input *os.File, output *os.File, diversifier []byte, cmd string) (err er
 func DCPDeriveKey(diversifier []byte, iv []byte) (key []byte, err error) {
 	var aes_key string
 
-	log.Printf("dcp_tool: deriving key, diversifier %x", diversifier)
+	log.Printf("dcp_aes_kdf: deriving key, diversifier %x", diversifier)
 
 	fd, err := unix.Socket(unix.AF_ALG, unix.SOCK_SEQPACKET, 0)
 
@@ -206,7 +206,7 @@ func DCPDeriveKey(diversifier []byte, iv []byte) (key []byte, err error) {
 	return cryptoAPI(apifd, unix.ALG_OP_ENCRYPT, iv, pad(diversifier, false))
 }
 
-func encryptOFB(key []byte, iv []byte, input *os.File, output *os.File) (err error) {
+func encryptCTR(key []byte, iv []byte, input *os.File, output *os.File) (err error) {
 	block, err := aes.NewCipher(key)
 
 	if err != nil {
@@ -220,7 +220,7 @@ func encryptOFB(key []byte, iv []byte, input *os.File, output *os.File) (err err
 	mac := hmac.New(sha256.New, key)
 	mac.Write(iv)
 
-	stream := cipher.NewOFB(block, iv)
+	stream := cipher.NewCTR(block, iv)
 	buf := make([]byte, 32*1024)
 
 	for {
@@ -253,7 +253,7 @@ func encryptOFB(key []byte, iv []byte, input *os.File, output *os.File) (err err
 	return
 }
 
-func decryptOFB(key []byte, iv []byte, input *os.File, output *os.File) (err error) {
+func decryptCTR(key []byte, iv []byte, input *os.File, output *os.File) (err error) {
 	block, err := aes.NewCipher(key)
 
 	if err != nil {
@@ -294,7 +294,7 @@ func decryptOFB(key []byte, iv []byte, input *os.File, output *os.File) (err err
 		return errors.New("invalid HMAC")
 	}
 
-	stream := cipher.NewOFB(block, iv)
+	stream := cipher.NewCTR(block, iv)
 	writer := &cipher.StreamWriter{S: stream, W: output}
 
 	if _, err = input.Seek(headerSize, 0); err != nil {

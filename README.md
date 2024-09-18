@@ -96,10 +96,10 @@ front-end supports the DCP through this driver, providing a Go userspace
 implementation reference.
 
 The included
-[dcp_tool](https://github.com/usbarmory/mxs-dcp/blob/master/dcp_tool.go)
+[dcp_aes_kdf](https://github.com/usbarmory/mxs-dcp/blob/master/dcp_aes_kdf.go)
 utility provides a reference implementation for data blob
 encryption/decryption, it can be built like any Go executable or with
-`make dcp_tool`.
+`make dcp_aes_kdf`.
 
 License
 =======
