@@ -33,7 +33,7 @@ Marek Vasut (original driver)
 marex@denx.de  
 
 Andrea Barisani (OTP key support and userspace tool)  
-andrea.barisani@withsecure.com | andrea@inversepath.com  
+andrea@inversepath.com  
 
 Compiling
 =========

@@ -63,6 +63,9 @@ type af_alg_iv struct {
 // NIST AES-128-CBC test vector
 const TEST_KEY = "\x2b\x7e\x15\x16\x28\xae\xd2\xa6\xab\xf7\x15\x88\x09\xcf\x4f\x3c"
 
+// Defined in Linux `include/soc/fsl/dcp.h`
+const DCP_PAES_KEY_UNIQUE 0xfe
+
 var test bool
 
 func init() {
@@ -183,14 +186,14 @@ func DCPDeriveKey(diversifier []byte, iv []byte) (key []byte, err error) {
 
 	addr := &unix.SockaddrALG{
 		Type: "skcipher",
-		Name: "cbc-aes-dcp",
+		Name: "cbc-paes-dcp",
 	}
 
 	if test {
 		addr.Name = "cbc(aes)"
 		aes_key = TEST_KEY
 	} else {
-		aes_key = "" // Empty key: Use DCP internal key
+		aes_key = DCP_PAES_KEY_UNIQUE
 	}
 
 	if err = unix.Bind(fd, addr); err != nil {
