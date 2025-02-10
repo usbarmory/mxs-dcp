@@ -1190,7 +1190,7 @@ err_destroy_sha_thread:
 	return ret;
 }
 
-static int mxs_dcp_remove(struct platform_device *pdev)
+static void mxs_dcp_remove(struct platform_device *pdev)
 {
 	struct dcp *sdcp = platform_get_drvdata(pdev);
 
@@ -1209,8 +1209,6 @@ static int mxs_dcp_remove(struct platform_device *pdev)
 	platform_set_drvdata(pdev, NULL);
 
 	global_sdcp = NULL;
-
-	return 0;
 }
 
 static const struct of_device_id mxs_dcp_dt_ids[] = {
