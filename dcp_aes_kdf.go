@@ -64,7 +64,7 @@ type af_alg_iv struct {
 const TEST_KEY = "\x2b\x7e\x15\x16\x28\xae\xd2\xa6\xab\xf7\x15\x88\x09\xcf\x4f\x3c"
 
 // Defined in Linux `include/soc/fsl/dcp.h`
-const DCP_PAES_KEY_UNIQUE 0xfe
+const DCP_PAES_KEY_UNIQUE = "\xfe"
 
 var test bool
 
