@@ -104,10 +104,10 @@ encryption/decryption, it can be built like any Go executable or with
 License
 =======
 
-NXP Data Co-Processor (DCP) - Linux driver
+NXP Data Co-Processor (DCP) - Linux driver  
 https://github.com/usbarmory/mxs-dcp
 
-Copyright (c) WithSecure Corporation  
+Copyright (c) The mxs-dcp authors  
 Copyright (c) 2013 Marek Vasut <marex@denx.de>  
 
 This program is free software: you can redistribute it and/or modify it under
