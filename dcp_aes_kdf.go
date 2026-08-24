@@ -176,7 +176,7 @@ func DCPDeriveKey(diversifier []byte, iv []byte) (key []byte, err error) {
 
 	addr := &unix.SockaddrALG{
 		Type: "skcipher",
-		Name: "cbc-paes-dcp",
+		Name: "cbc(paes)",
 	}
 
 	if test {
